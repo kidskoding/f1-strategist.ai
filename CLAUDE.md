@@ -6,6 +6,16 @@
 
 ---
 
+## Development workflow
+
+After completing each task in `TASKS.md`:
+
+1. Verify the expected outcomes listed in the task
+2. **Commit before moving to the next task** — one commit per task, using `feat(scaffold): task N.M — <name>`
+3. Then continue with `/scaffold`
+
+---
+
 ## Local setup
 
 ```bash
