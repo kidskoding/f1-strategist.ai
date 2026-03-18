@@ -11,8 +11,10 @@
 After completing each task in `TASKS.md`:
 
 1. Verify the expected outcomes listed in the task
-2. **Commit before moving to the next task** — one commit per task, using `feat(scaffold): task N.M — <name>`
-3. Then continue with `/scaffold`
+2. **Write pytest tests in `tests/`** for any logic that is testable (agents, core modules, API endpoints) — skip for pure scaffolding tasks (e.g. project init, env setup)
+3. Run `uv run pytest tests/` and confirm all tests pass before committing
+4. **Commit before moving to the next task** — one commit per task, using `feat(scaffold): task N.M — <name>`
+5. Then continue with `/scaffold`
 
 ---
 
