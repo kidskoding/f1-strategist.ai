@@ -151,6 +151,19 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+async def root() -> dict[str, str]:
+    """Simple landing route for local browser visits."""
+    return {
+        "name": "f1-strategist.ai",
+        "status": "ok",
+        "docs": "/docs",
+        "health": "/health",
+        "state": "/state",
+        "ws": "/ws/strategy",
+    }
+
+
 @app.get("/state")
 async def state() -> JSONResponse:
     """Return the current RaceState as a JSON object."""

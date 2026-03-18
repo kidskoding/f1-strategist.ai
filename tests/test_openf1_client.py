@@ -19,8 +19,23 @@ class MockTransport(httpx.AsyncBaseTransport):
         return self._response
 
 
+class SequenceTransport(httpx.AsyncBaseTransport):
+    def __init__(self, responses: list[httpx.Response]):
+        self._responses = responses
+        self.calls = 0
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        idx = self.calls
+        self.calls += 1
+        return self._responses[min(idx, len(self._responses) - 1)]
+
+
 async def make_client(response: httpx.Response) -> OpenF1Client:
-    client = OpenF1Client(base_url="https://api.openf1.org/v1", request_delay=0)
+    client = OpenF1Client(
+        base_url="https://api.openf1.org/v1",
+        request_delay=0,
+        max_requests_per_sec=1000,
+    )
     client._client = httpx.AsyncClient(transport=MockTransport(response), base_url="https://api.openf1.org/v1")
     return client
 
@@ -43,6 +58,37 @@ class TestGetPositions:
         with pytest.raises(OpenF1Error) as exc_info:
             await client.get_positions("9158", 1)
         assert exc_info.value.status_code == 500
+
+    async def test_retries_on_429_then_succeeds(self):
+        payload = [{"driver_number": 1, "lap_number": 24}]
+        seq_transport = SequenceTransport([make_response(429, "rate limited"), make_response(200, payload)])
+        client = OpenF1Client(
+            base_url="https://api.openf1.org/v1",
+            request_delay=0,
+            max_requests_per_sec=1000,
+        )
+        client._client = httpx.AsyncClient(transport=seq_transport, base_url="https://api.openf1.org/v1")
+
+        result = await client.get_positions("9158", 1)
+
+        assert result == payload
+        assert seq_transport.calls == 2
+
+    async def test_raises_after_exhausting_429_retries(self):
+        seq_transport = SequenceTransport([make_response(429, "rate limited")] * 5)
+        client = OpenF1Client(
+            base_url="https://api.openf1.org/v1",
+            request_delay=0,
+            max_requests_per_sec=1000,
+            max_429_retries=1,
+        )
+        client._client = httpx.AsyncClient(transport=seq_transport, base_url="https://api.openf1.org/v1")
+
+        with pytest.raises(OpenF1Error) as exc_info:
+            await client.get_positions("9158", 1)
+
+        assert exc_info.value.status_code == 429
+        assert seq_transport.calls == 2
 
 
 class TestGetIntervals:
@@ -76,7 +122,7 @@ class TestGetRaceControl:
 
 class TestContextManager:
     async def test_raises_without_context_manager(self):
-        client = OpenF1Client(request_delay=0)
+        client = OpenF1Client(request_delay=0, max_requests_per_sec=1000)
         with pytest.raises(RuntimeError, match="async context manager"):
             await client.get_positions("9158", 1)
 
@@ -87,7 +133,11 @@ class TestContextManager:
             async def handle_async_request(self, request):
                 return make_response(200, payload)
 
-        async with OpenF1Client(base_url="https://api.openf1.org/v1", request_delay=0) as client:
+        async with OpenF1Client(
+            base_url="https://api.openf1.org/v1",
+            request_delay=0,
+            max_requests_per_sec=1000,
+        ) as client:
             client._client = httpx.AsyncClient(
                 transport=AutoTransport(), base_url="https://api.openf1.org/v1"
             )
