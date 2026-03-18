@@ -29,11 +29,21 @@ If any of these files are missing, stop and tell the user:
 
 ---
 
-## Step 2: Identify the Current Task
+## Step 2: Identify the Current Task(s)
 
-Scan `TASKS.md` top-to-bottom and find the **first task with no `[DONE]` marker**.
+Scan `TASKS.md` top-to-bottom and find all consecutive incomplete tasks (no `[DONE]` marker) that are **independent of each other** — meaning none of them depend on the output of another incomplete task in the group.
+
+### Parallelization rules
+
+- If 2 or more consecutive incomplete tasks write to **different files** and share no dependencies, run them in parallel using the `task-implementer` subagent — one agent per task, each in an isolated worktree
+- If only one task is ready (or the next task depends on a previous incomplete task), implement it directly (Steps 3–6 below)
+- After all parallel agents finish, merge their file changes into the main worktree, run `uv run pytest tests/` to confirm all tests pass, then commit with one commit per task
 
 Report to the user:
+```
+Parallel tasks: Task N.M, Task N.M+1, Task N.M+2 — spawning agents
+```
+or:
 ```
 Current task: <Phase N> — Task N.M — <Task Name>
 ```
