@@ -82,7 +82,7 @@ Core components:
 # Tech Stack
 
 ## Backend
-Python 3.11+, FastAPI, asyncio
+Python 3.11+, FastAPI, asyncio, uv (package manager)
 
 ## Frontend
 Optional — plain HTML/JS dashboard consuming the WebSocket feed

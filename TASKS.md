@@ -12,18 +12,21 @@ Each task should leave the application in a **runnable state**.
 
 ## Task 1.1 — Project scaffold and dependencies
 
-Set up the Python project structure, virtual environment config, and all required dependencies.
+Set up the Python project structure using `uv` and all required dependencies.
 
 Requirements:
 
-- Create `pyproject.toml` with dependencies: `fastapi`, `uvicorn`, `httpx`, `pydantic`, `anthropic`, `python-dotenv`
+- Use `uv init` to initialize the project, then `uv add fastapi uvicorn httpx pydantic anthropic python-dotenv` to add dependencies
+- `pyproject.toml` should use `uv`-compatible format (no `setup.py`)
 - Create `.env.example` with all required env vars: `ANTHROPIC_API_KEY`, `OPENF1_BASE_URL`, `TARGET_DRIVER`, `POLL_INTERVAL_SECS`, `LOG_LEVEL`
 - Create empty `__init__.py` files for `agents/`, `core/`, `api/`, `tests/` packages
 - Create `tests/fixtures/` directory with a `.gitkeep`
+- Do NOT create a manual venv — `uv` manages it automatically
 
 Expected outcomes:
 
-- `pyproject.toml` is valid and `pip install -e .` succeeds
+- `uv sync` succeeds and installs all dependencies
+- `uv run python -c "import fastapi, httpx, anthropic"` succeeds without errors
 - All package directories exist with `__init__.py`
 - `.env.example` documents every required variable
 

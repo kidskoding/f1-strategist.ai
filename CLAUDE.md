@@ -2,7 +2,7 @@
 
 > f1-strategist.ai — Real-time F1 race strategy optimization using a multi-agent swarm.
 > Built for open source
-> Stack: FastAPI · OpenF1 API · Claude claude-sonnet-4-6 · Python
+> Stack: FastAPI · OpenF1 API · Claude claude-sonnet-4-6 · Python · uv
 
 ---
 
@@ -109,7 +109,7 @@ Useful for testing: replay 2024 race sessions by filtering with `date` params.
 f1-strategist.ai/
 ├── CLAUDE.md                  ← you are here
 ├── README.md
-├── pyproject.toml
+├── pyproject.toml             ← managed by uv
 ├── .env.example
 │
 ├── agents/
